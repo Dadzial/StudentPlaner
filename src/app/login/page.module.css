@@ -1,0 +1,11 @@
+.page {
+    --background: #ffffff;
+    font-family: var(--font-inter) , sans-serif ;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--background);
+    color:#000000
+}
