@@ -6,7 +6,7 @@ const theme = createTheme({
         mode: "light",
     },
     typography: {
-        fontFamily: "var(--font-inter), Arial, sans-serif",
+        fontFamily: " var(--font-poppins)",
     },
 });
 
