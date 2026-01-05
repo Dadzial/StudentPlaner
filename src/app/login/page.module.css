@@ -1,11 +1,16 @@
+html,
+body {
+    overflow: hidden;
+    min-height: 100vh;
+    margin: 0;
+}
+
 .page {
-    --background: #ffffff;
     font-family: var(--font-inter) , sans-serif ;
-    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background-color: var(--background);
+    background : radial-gradient(#DADADA, #E6E6E6);
     color:#000000
 }
