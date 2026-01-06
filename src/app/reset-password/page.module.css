@@ -1,0 +1,14 @@
+html,
+body {
+    overflow: hidden;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.page {
+    display: flex;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background : radial-gradient(#DADADA, #E6E6E6);
+}

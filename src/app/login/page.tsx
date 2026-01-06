@@ -1,11 +1,72 @@
 "use client";
+import { useState } from "react";
 import styles from "./page.module.css"
 import { Box, Paper, Typography , TextField , Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 
+interface LoginResponse {
+    uid?: string;
+    error?: string;
+}
+
 export default function Login () {
 
     const router = useRouter();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+
+    const handleLogin = async () => {
+        let valid = true;
+
+        if (!email) {
+            setEmailError("Email is required");
+            valid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setEmailError("Enter a valid email");
+            valid = false;
+        }
+
+        if (!password) {
+            setPasswordError("Password is required");
+            valid = false;
+        } else if (password.length < 8) {
+            setPasswordError("Password must be at least 8 characters");
+            valid = false;
+        }
+
+        if (!valid) {
+            setTimeout(() => {
+                setEmailError("");
+                setPasswordError("");
+            }, 2000);
+            return;
+        }
+
+        try{
+            const res = await fetch ("/api/auth", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({email, password}),
+            });
+            const data : LoginResponse = await res.json();
+
+            if (!res.ok) {
+                console.error(data.error);
+                return;
+            }
+
+            console.log("User logged in:", data.uid);
+            router.push("/dashboard");
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    };
 
     return (
         <div className={styles.page}>
@@ -34,17 +95,13 @@ export default function Login () {
                         component="img"
                         src="/app_icon.png"
                         alt="App Icon"
-                        sx={{
-                            width: 48,
-                            height: 48,
-                        }}
+                        sx={{ width: 48, height: 48 }}
                     />
                     <Typography
                         sx={{
                             fontFamily: "var(--font-poppins)",
                             color:"#B60A0A",
                             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
-
                         }}
                         variant="h5" fontWeight={600}>
                         StudyFlow
@@ -55,12 +112,17 @@ export default function Login () {
                             color:"#B60A0A",
                             opacity: 0.7,
                             fontSize: "14px",
-
                         }}
-                         fontWeight={600}>
+                        fontWeight={600}>
                         Welcome back! Please enter your  details
                     </Typography>
+
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        {emailError && (
+                            <Typography sx={{ color: "#B60A0A", fontSize: "0.8rem" }}>
+                                {emailError}
+                            </Typography>
+                        )}
                         <Typography
                             sx={{
                                 fontSize: "0.875rem",
@@ -70,30 +132,30 @@ export default function Login () {
                         >
                             Email
                         </Typography>
-
                         <TextField
+                            placeholder={"example@gmail.com"}
                             variant="outlined"
                             fullWidth
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "transparent",
-                                    "& fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
-                                    "&:hover fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
-                                    "&.Mui-focused fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
+                                    "& fieldset": { borderColor: "#B60A0A" },
+                                    "&:hover fieldset": { borderColor: "#B60A0A" },
+                                    "&.Mui-focused fieldset": { borderColor: "#B60A0A" },
                                 },
-                                "& .MuiInputBase-input": {
-                                    color: "#B60A0A",
-                                },
+                                "& .MuiInputBase-input": { color: "#B60A0A" },
                             }}
                         />
                     </Box>
+
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        {passwordError && (
+                            <Typography sx={{ color: "#B60A0A", fontSize: "0.8rem" }}>
+                                {passwordError}
+                            </Typography>
+                        )}
                         <Typography
                             sx={{
                                 fontSize: "0.875rem",
@@ -103,26 +165,21 @@ export default function Login () {
                         >
                             Password
                         </Typography>
-
                         <TextField
+                            placeholder={"********"}
                             variant="outlined"
                             fullWidth
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "transparent",
-                                    "& fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
-                                    "&:hover fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
-                                    "&.Mui-focused fieldset": {
-                                        borderColor: "#B60A0A",
-                                    },
+                                    "& fieldset": { borderColor: "#B60A0A" },
+                                    "&:hover fieldset": { borderColor: "#B60A0A" },
+                                    "&.Mui-focused fieldset": { borderColor: "#B60A0A" },
                                 },
-                                "& .MuiInputBase-input": {
-                                    color: "#B60A0A",
-                                },
+                                "& .MuiInputBase-input": { color: "#B60A0A" },
                             }}
                         />
                         <Typography
@@ -143,6 +200,7 @@ export default function Login () {
                             Forgot password ?
                         </Typography>
                     </Box>
+
                     <Button
                         sx={{
                             backgroundColor: "#B60A0A",
@@ -158,27 +216,30 @@ export default function Login () {
                                 boxShadow: "0 6px 14px rgba(182, 10, 10, 0.5)",
                             },
                         }}
+                        onClick={handleLogin}
                     >
                         Log in
                     </Button>
+
                     <Typography onClick={() => router.push("/register")}
-                        sx={{
-                            color: "#B60A0A",
-                            fontSize: "0.9rem",
-                            fontWeight: 500,
-                            cursor: "pointer",
-                            opacity:0.7,
-                            userSelect: "none",
-                            transition: "color 0.2s ease",
-                            "&:hover": {
-                                color: "#9E0808",
-                                textDecoration: "underline",
-                            },
-                        }}
+                                sx={{
+                                    color: "#B60A0A",
+                                    fontSize: "0.9rem",
+                                    fontWeight: 500,
+                                    cursor: "pointer",
+                                    opacity:0.7,
+                                    userSelect: "none",
+                                    transition: "color 0.2s ease",
+                                    "&:hover": {
+                                        color: "#9E0808",
+                                        textDecoration: "underline",
+                                    },
+                                }}
                     >
-                        Don&#39;t have account ? Sign up
+                        Don&apos;t have account ? Sign up
                     </Typography>
                 </Box>
+
                 <Box
                     sx={{
                         flex: 4,
