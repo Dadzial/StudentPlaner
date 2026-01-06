@@ -182,7 +182,7 @@ export default function Login () {
                                 "& .MuiInputBase-input": { color: "#B60A0A" },
                             }}
                         />
-                        <Typography
+                        <Typography onClick={() => router.push("/reset-password")}
                             sx={{
                                 color: "#B60A0A",
                                 fontSize: "0.9rem",

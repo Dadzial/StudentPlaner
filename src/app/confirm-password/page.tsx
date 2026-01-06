@@ -1,52 +1,46 @@
-"use client"
-import {useState} from "react";
-import styles from "./page.module.css"
-import {Box, Button, Paper, TextField, Typography} from "@mui/material";
-import { useRouter } from "next/navigation";
+"use client";
+import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import styles from "./page.module.css";
+import { Box, Button, Paper, TextField, Typography } from "@mui/material";
+import { confirmNewPassword } from "@/lib/firebase/auth";
 
-export default function ResetPassword() {
-
+export default function ConfirmPassword() {
     const router = useRouter();
+    const params = useSearchParams();
+    const oobCode = params.get("oobCode");
 
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState("");
+    const [password, setPassword] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    const handleReset = async () => {
+    const handleConfirmPassword = async () => {
         let valid = true;
 
-        if (!email) {
-            setEmailError("Email is required");
+        if (!password) {
+            setPasswordError("Password is required");
             valid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setEmailError("Enter a valid email");
+        } else if (password.length < 8) {
+            setPasswordError("Password must be at least 8 characters");
             valid = false;
         }
 
         if (!valid) {
-            setTimeout(() => {
-                setEmailError("");
-            }, 2000);
+            setTimeout(() => setPasswordError(""), 2000);
             return;
         }
 
-        try{
-            const res = await fetch("/api/reset-password",{
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                console.error(data.error);
-                return;
-            }
+        if (!oobCode) {
+            setPasswordError("Invalid or expired reset link");
+            return;
+        }
 
-            console.log("password reset email sent successfully:", data.uid);
-            router.push("/login");
-        }catch (error){
-            console.error("Error resetting password:", error);
+        try {
+            await confirmNewPassword(oobCode, password);
+            setSuccess("Password reset successful! Redirecting to login...");
+            setTimeout(() => router.push("/login"), 2000);
+        } catch (err) {
+            setPasswordError("Reset link expired or invalid");
         }
     };
 
@@ -82,10 +76,12 @@ export default function ResetPassword() {
                     <Typography
                         sx={{
                             fontFamily: "var(--font-poppins)",
-                            color:"#B60A0A",
+                            color: "#B60A0A",
                             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
                         }}
-                        variant="h5" fontWeight={600}>
+                        variant="h5"
+                        fontWeight={600}
+                    >
                         StudyFlow
                     </Typography>
                     <Typography
@@ -96,30 +92,27 @@ export default function ResetPassword() {
                             fontSize: "14px",
                         }}
                         fontWeight={600}>
-                        Reset password
+                        Confirm Password
                     </Typography>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        {emailError && (
+                        {passwordError && (
                             <Typography sx={{ color: "#B60A0A", fontSize: "0.8rem" }}>
-                                {emailError}
+                                {passwordError}
                             </Typography>
                         )}
-                        <Typography
-                            sx={{
-                                fontSize: "0.875rem",
-                                color: "#B60A0A",
-                                fontWeight: 500,
-                            }}
-                        >
-                            Email
-                        </Typography>
+                        {success && (
+                            <Typography sx={{ color: "green", fontSize: "0.8rem" }}>
+                                {success}
+                            </Typography>
+                        )}
                         <TextField
-                            placeholder={"example@gmail.com"}
+                            placeholder="********"
                             variant="outlined"
                             fullWidth
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "transparent",
@@ -147,22 +140,23 @@ export default function ResetPassword() {
                                 boxShadow: "0 6px 14px rgba(182, 10, 10, 0.5)",
                             },
                         }}
-                        onClick={handleReset}
+                        onClick={handleConfirmPassword}
                     >
-                        Confirm
+                        Confirm Password
                     </Button>
 
-                    <Typography onClick={() => router.push("/login")}
-                                sx={{
-                                    color: "#B60A0A",
-                                    fontSize: "0.9rem",
-                                    fontWeight: 500,
-                                    cursor: "pointer",
-                                    opacity:0.7,
-                                    userSelect: "none",
-                                    transition: "color 0.2s ease",
-                                    "&:hover": { color: "#9E0808", textDecoration: "underline" },
-                                }}
+                    <Typography
+                        onClick={() => router.push("/login")}
+                        sx={{
+                            color: "#B60A0A",
+                            fontSize: "0.9rem",
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            opacity: 0.7,
+                            userSelect: "none",
+                            transition: "color 0.2s ease",
+                            "&:hover": { color: "#9E0808", textDecoration: "underline" },
+                        }}
                     >
                         Back to login
                     </Typography>
@@ -185,7 +179,7 @@ export default function ResetPassword() {
                             width: "100%",
                             height: "100%",
                             backgroundColor: "#D91818",
-                            opacity:0.8
+                            opacity: 0.8,
                         }}
                     />
                 </Box>

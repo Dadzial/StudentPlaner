@@ -1,4 +1,4 @@
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword , sendPasswordResetEmail } from "firebase/auth";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword , sendPasswordResetEmail, confirmPasswordReset } from "firebase/auth";
 import {auth} from "./config";
 
 
@@ -30,11 +30,19 @@ export const loginUser = async (email: string, password: string) => {
 
 export const passwordReset = async (email: string): Promise<void> => {
     try {
-        await sendPasswordResetEmail(auth, email);
+
+        await sendPasswordResetEmail(auth, email,{
+            url: "http://localhost:3000/confirm-password",
+            handleCodeInApp: true,
+        });
     } catch (error: unknown) {
         if (error instanceof Error) {
             throw new Error(error.message);
         }
         throw new Error("Unknown error");
     }
+};
+
+export const confirmNewPassword = async (oobCode: string, newPassword: string) => {
+    await confirmPasswordReset(auth, oobCode, newPassword);
 };
