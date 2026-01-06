@@ -1,9 +1,9 @@
-"use client";
+"use client"
 import styles from "./page.module.css"
-import { Box, Paper, Typography , TextField , Button } from "@mui/material";
+import {Box, Button, Paper, TextField, Typography} from "@mui/material";
 import { useRouter } from "next/navigation";
 
-export default function Login () {
+export default function Register() {
 
     const router = useRouter();
 
@@ -27,7 +27,7 @@ export default function Login () {
                         flexDirection: "column",
                         justifyContent: "start",
                         alignItems: "center",
-                        gap: 1,
+                        gap: 2,
                     }}
                 >
                     <Box
@@ -57,8 +57,8 @@ export default function Login () {
                             fontSize: "14px",
 
                         }}
-                         fontWeight={600}>
-                        Welcome back! Please enter your  details
+                        fontWeight={600}>
+                        Welcome to StudyFlow register page
                     </Typography>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                         <Typography
@@ -125,23 +125,6 @@ export default function Login () {
                                 },
                             }}
                         />
-                        <Typography
-                            sx={{
-                                color: "#B60A0A",
-                                fontSize: "0.9rem",
-                                fontWeight: 500,
-                                cursor: "pointer",
-                                opacity:0.7,
-                                userSelect: "none",
-                                transition: "color 0.2s ease",
-                                "&:hover": {
-                                    color: "#9E0808",
-                                    textDecoration: "underline",
-                                },
-                            }}
-                        >
-                            Forgot password ?
-                        </Typography>
                     </Box>
                     <Button
                         sx={{
@@ -159,24 +142,24 @@ export default function Login () {
                             },
                         }}
                     >
-                        Log in
+                        Register
                     </Button>
-                    <Typography onClick={() => router.push("/register")}
-                        sx={{
-                            color: "#B60A0A",
-                            fontSize: "0.9rem",
-                            fontWeight: 500,
-                            cursor: "pointer",
-                            opacity:0.7,
-                            userSelect: "none",
-                            transition: "color 0.2s ease",
-                            "&:hover": {
-                                color: "#9E0808",
-                                textDecoration: "underline",
-                            },
-                        }}
+                    <Typography onClick={() => router.push("/login")}
+                                sx={{
+                                    color: "#B60A0A",
+                                    fontSize: "0.9rem",
+                                    fontWeight: 500,
+                                    cursor: "pointer",
+                                    opacity:0.7,
+                                    userSelect: "none",
+                                    transition: "color 0.2s ease",
+                                    "&:hover": {
+                                        color: "#9E0808",
+                                        textDecoration: "underline",
+                                    },
+                                }}
                     >
-                        Don&#39;t have account ? Sign up
+                        Already have an account ? Log in
                     </Typography>
                 </Box>
                 <Box
