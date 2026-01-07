@@ -1,6 +1,8 @@
 "use client";
 import Image from "next/image";
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import {logoutUser} from "@/lib/firebase/auth";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -14,12 +16,23 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
+import {JSX} from "react";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 
 const pages = ["Home", "Tasks", "Calender", "Notes", "Grades"];
-const settings = ["Account","Settings", "Logout"];
+const settings = ["Account", "Settings", "Logout"];
+
+const settingsIcons: Record<string, JSX.Element> = {
+    Account: <AccountCircleIcon fontSize="small" sx={{ mr: 1 , color: "#B60A0A"}} />,
+    Settings: <SettingsIcon fontSize="small" sx={{ mr: 1 , color:"#B60A0A"}} />,
+    Logout: <LogoutIcon fontSize="small" sx={{ mr: 1 , color:"#B60A0A" }} />,
+};
 
 export default function ResponsiveAppBar() {
+    const router = useRouter();
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -37,6 +50,11 @@ export default function ResponsiveAppBar() {
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
+    };
+
+    const handleLogout = async () => {
+        await logoutUser();
+        router.push("/login");
     };
 
     return (
@@ -104,7 +122,7 @@ export default function ResponsiveAppBar() {
                             transformOrigin={{ vertical: "top", horizontal: "left" }}
                             open={Boolean(anchorElNav)}
                             onClose={handleCloseNavMenu}
-                            sx={{ display: { xs: "block", md: "none" },  }}
+                            sx={{ display: { xs: "block", md: "none" },}}
                         >
                             {pages.map((page) => (
                                 <MenuItem key={page} onClick={handleCloseNavMenu}>
@@ -166,15 +184,30 @@ export default function ResponsiveAppBar() {
 
                         <Menu
                             anchorEl={anchorElUser}
-                            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             transformOrigin={{ vertical: "top", horizontal: "right" }}
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
-                            sx={{ mt: "45px" }}
+                            PaperProps={{
+                                sx: {
+                                    mt: 1,
+                                    py: 0,
+                                    "& .MuiMenuItem-root": { py: 0.5 },
+                                },
+                            }}
                         >
                             {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
+                                <MenuItem
+                                    key={setting}
+                                    onClick={()=>{
+                                        handleCloseUserMenu();
+                                        if(setting === "Logout") {
+                                            handleLogout();
+                                        }
+                                    }}
+                                >
+                                    {settingsIcons[setting]}
+                                    <Typography textAlign="left" sx={{fontWeight: 600,fontFamily: "var(--font-poppins)", textTransform:"none"}}>{setting}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>

@@ -1,4 +1,4 @@
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword , sendPasswordResetEmail, confirmPasswordReset } from "firebase/auth";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword , sendPasswordResetEmail, confirmPasswordReset, signOut } from "firebase/auth";
 import {auth} from "./config";
 
 
@@ -45,4 +45,13 @@ export const passwordReset = async (email: string): Promise<void> => {
 
 export const confirmNewPassword = async (oobCode: string, newPassword: string) => {
     await confirmPasswordReset(auth, oobCode, newPassword);
+};
+
+export const logoutUser = async () => {
+    signOut(auth).then(() => {
+        console.log("User logged out");
+    }).catch((error) => {
+        console.error("Error logging out user:", error);
+    });
+
 };
