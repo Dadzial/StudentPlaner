@@ -16,7 +16,7 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 
 
-const pages = ["Home", "Tests", "Calender", "Notes", "Grades"];
+const pages = ["Home", "Tasks", "Calender", "Notes", "Grades"];
 const settings = ["Account","Settings", "Logout"];
 
 export default function ResponsiveAppBar() {
@@ -139,6 +139,7 @@ export default function ResponsiveAppBar() {
                         {pages.map((page) => (
                             <Button
                                 key={page}
+                                href={`/${page.toLowerCase()}`}
                                 onClick={handleCloseNavMenu}
                                 sx={{ my: 2, color: "#B60A0A", display: "block" , fontWeight: 700, textTransform:"none" , textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)" }}
                             >

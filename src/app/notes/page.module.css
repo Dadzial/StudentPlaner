@@ -1,0 +1,21 @@
+html,
+body {
+    overflow: hidden;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.page {
+    display: flex;
+    min-height: 100vh;
+    background : radial-gradient(#DADADA, #E6E6E6);
+}
+
+.topbar {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+}
