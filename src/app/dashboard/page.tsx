@@ -1,10 +1,13 @@
 "use client"
 import styles from "./page.module.css"
+import ResponsiveAppBar from "../_components/Topbar"
 
 export default function Dashboard () {
     return (
         <div className={styles.page}>
-            <h1>Dashboard</h1>
+            <div className={styles.topbar}>
+                <ResponsiveAppBar />
+            </div>
         </div>
     )
 }
