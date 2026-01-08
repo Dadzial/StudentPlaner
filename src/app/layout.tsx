@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import { ThemeProvider } from "@mui/material/styles";
-import theme from "../app/theme/theme";
+import AppThemeProvider from "./providers";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -21,9 +20,7 @@ export default function RootLayout({children,}: Readonly<{
     return (
         <html lang="en">
         <body className={`${poppins.variable}`}>
-        <ThemeProvider theme={theme}>
-            {children}
-        </ThemeProvider>
+        <AppThemeProvider>{children}</AppThemeProvider>
         </body>
         </html>
     );
