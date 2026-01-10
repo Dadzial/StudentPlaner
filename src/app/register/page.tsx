@@ -242,6 +242,7 @@ export default function Register() {
                     />
                 </Box>
             </Paper>
+
         </div>
     );
 }

@@ -1,12 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { Paper, Typography, TextField, Button } from "@mui/material";
-import {ThemeToggle} from "@/app/_components/ThemeToggle";
+import { ThemeToggle } from "@/app/_components/ThemeToggle";
 import styles from "./page.module.css";
 import { useTheme } from "@mui/material/styles";
 
@@ -19,10 +19,11 @@ export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
+    const errorTimeoutRef = useRef<NodeJS.Timeout | null >(null);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
+
+    const [formError, setFormError] = useState("");
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -35,48 +36,62 @@ export default function LoginPage() {
         return () => unsubscribe();
     }, [router]);
 
+
+    const showError = (message: string) => {
+        if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+        setFormError(message);
+
+        errorTimeoutRef.current = setTimeout(() => {
+            setFormError("");
+            errorTimeoutRef.current = null;
+        }, 2000);
+    };
+
     const handleLogin = async () => {
-        let valid = true;
-        if (!email) {
-            setEmailError("Email is required");
-            valid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setEmailError("Enter a valid email");
-            valid = false;
-        }
+        setFormError("");
 
-        if (!password) {
-            setPasswordError("Password is required");
-            valid = false;
-        } else if (password.length < 8) {
-            setPasswordError("Password must be at least 8 characters");
-            valid = false;
-        }
-
-        if (!valid) {
-            setTimeout(() => {
-                setEmailError("");
-                setPasswordError("");
-            }, 2000);
+        if (!email && !password) {
+            showError("Please enter your email address and password.");
             return;
         }
 
-        setLoading(true);
+        if (!email) {
+            showError("Please enter your email address.");
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError("The email address format is incorrect.");
+            return;
+        }
+
+        if (!password) {
+            showError("Please enter your password.");
+            return;
+        }
+
+        if (password.length < 8) {
+            showError("Password must contain at least 8 characters.");
+            return;
+        }
+
         try {
             const res = await fetch("/api/auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
+
             const data: LoginResponse = await res.json();
+
             if (!res.ok) {
-                console.error(data.error);
-                setLoading(false);
+                setFormError("Invalid email or password.");
                 return;
             }
+
             router.push("/home");
-        } catch (error) {
-            console.error("Login failed:", error);
+        } catch {
+            setFormError("Something went wrong. Please try again later.");
         }
     };
 
@@ -98,11 +113,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className={styles.page}
-             style={{
-                 background: theme.palette.background.default,
-             }}
-        >
+        <div className={styles.page} style={{ background: theme.palette.background.default }}>
             <div className={styles.login}>
                 <Paper
                     elevation={6}
@@ -120,80 +131,98 @@ export default function LoginPage() {
                             padding: 6,
                             display: "flex",
                             flexDirection: "column",
-                            justifyContent: "start",
                             alignItems: "center",
-                            gap: 1,
                         }}
                     >
-                        <Box component="img" src="/app_icon.png" alt="App Icon" sx={{ width: 48, height: 48 }} />
+
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 1 }}>
+                            <Box component="img" src="/app_icon.png" alt="App Icon" sx={{ width: 48, mb: 0.5 }} />
+                            <Typography
+                                variant="h5"
+                                fontWeight={600}
+                                sx={{ color: "#B60A0A", textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
+                            >
+                                StudyFlow
+                            </Typography>
+                            <Typography sx={{ color: "#B60A0A", opacity: 0.7, fontSize: 14 }}>
+                                Welcome back! Please enter your details
+                            </Typography>
+                        </Box>
+
+
                         <Typography
-                            sx={{ fontFamily: "var(--font-poppins)", color: "#B60A0A", textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
-                            variant="h5"
-                            fontWeight={600}
+                            sx={{
+                                color: "#B60A0A",
+                                fontSize: "0.85rem",
+                                height: "20px",
+                                lineHeight: "20px",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                mb: 0.5,
+                            }}
                         >
-                            StudyFlow
-                        </Typography>
-                        <Typography sx={{ fontFamily: "var(--font-poppins)", color: "#B60A0A", opacity: 0.7, fontSize: "14px" }} fontWeight={600}>
-                            Welcome back! Please enter your details
+                            {formError}
                         </Typography>
 
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                            {emailError && <Typography sx={{ color: "#B60A0A", fontSize: "0.8rem" }}>{emailError}</Typography>}
-                            <Typography sx={{ fontSize: "0.875rem", color: "#B60A0A", fontWeight: 500 }}>Email</Typography>
+
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.9 }}>
+                            <Typography sx={{ fontSize: "0.875rem", color: "#B60A0A", fontWeight: 500 }}>
+                                Email
+                            </Typography>
+
                             <TextField
-                                placeholder="example@gmail.com"
-                                variant="outlined"
                                 fullWidth
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                placeholder="example@gmail.com"
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
-                                        backgroundColor: "transparent",
-                                        "& fieldset": { borderColor: "#B60A0A" },
-                                        "&:hover fieldset": { borderColor: "#B60A0A" },
-                                        "&.Mui-focused fieldset": { borderColor: "#B60A0A" },
-                                        "&.Mui-focused": { backgroundColor: "transparent" },
+                                        "& fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
+                                        "&:hover fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
+                                        "&.Mui-focused fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
                                     },
                                     "& .MuiInputBase-input": {
-                                        color: theme.palette.mode === "light" ? "#B60A0A" : "#170b0b",
-                                    },
-                                    // Chrome autofill fix
-                                    "& input:-webkit-autofill": {
-                                        WebkitBoxShadow: "0 0 0 1000px transparent inset",
-                                        WebkitTextFillColor: theme.palette.mode === "light" ? "#B60A0A" : "#B60A0A",
+                                        color: "#B60A0A",
                                     },
                                 }}
                             />
                         </Box>
 
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                            {passwordError && <Typography sx={{ color: "#B60A0A", fontSize: "0.8rem" }}>{passwordError}</Typography>}
-                            <Typography sx={{ fontSize: "0.875rem", color: "#B60A0A", fontWeight: 500 }}>Password</Typography>
+                            <Typography sx={{ fontSize: "0.875rem", color: "#B60A0A", fontWeight: 500 }}>
+                                Password
+                            </Typography>
+
                             <TextField
-                                placeholder="********"
-                                variant="outlined"
                                 fullWidth
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                placeholder="********"
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
-                                        backgroundColor: "transparent",
-                                        "& fieldset": { borderColor: "#B60A0A" },
-                                        "&:hover fieldset": { borderColor: "#B60A0A" },
-                                        "&.Mui-focused fieldset": { borderColor: "#B60A0A" },
-                                        "&.Mui-focused": { backgroundColor: "transparent" },
+                                        "& fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
+                                        "&:hover fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
+                                        "&.Mui-focused fieldset": {
+                                            borderColor: "#B60A0A",
+                                        },
                                     },
                                     "& .MuiInputBase-input": {
-                                        color: theme.palette.mode === "light" ? "#B60A0A" : "#170b0b",
-                                    },
-                                    // Chrome autofill fix
-                                    "& input:-webkit-autofill": {
-                                        WebkitBoxShadow: "0 0 0 1000px transparent inset",
-                                        WebkitTextFillColor: theme.palette.mode === "light" ? "#B60A0A" : "#B60A0A",
+                                        color: "#B60A0A",
                                     },
                                 }}
                             />
+
                             <Typography
                                 onClick={() => router.push("/reset-password")}
                                 sx={{
@@ -202,41 +231,40 @@ export default function LoginPage() {
                                     fontWeight: 500,
                                     cursor: "pointer",
                                     opacity: 0.7,
-                                    userSelect: "none",
-                                    transition: "color 0.2s ease",
-                                    "&:hover": { color: "#9E0808", textDecoration: "underline" },
+                                    "&:hover": { textDecoration: "underline" },
                                 }}
                             >
                                 Forgot password?
                             </Typography>
                         </Box>
+
                         <Button
+                            onClick={handleLogin}
                             sx={{
+                                mt: 1.5,
                                 backgroundColor: "#B60A0A",
-                                color: theme.palette.mode === "light" ? "#FFFFFF" : "#343434",
+                                color: theme.palette.mode === "dark" ? "#343434" : "#ffffff",
                                 borderRadius: "12px",
                                 px: 5,
                                 py: 1.2,
                                 fontWeight: 600,
                                 textTransform: "none",
-                                boxShadow: "0 4px 10px rgba(182,10,10,0.4)",
-                                "&:hover": { backgroundColor: "#9E0808", boxShadow: "0 6px 14px rgba(182,10,10,0.5)" },
+                                "&:hover": { backgroundColor: "#9E0808" },
                             }}
-                            onClick={handleLogin}
                         >
                             Log in
                         </Button>
+
                         <Typography
                             onClick={() => router.push("/register")}
                             sx={{
+                                mt: 0.5,
                                 color: "#B60A0A",
                                 fontSize: "0.9rem",
                                 fontWeight: 500,
                                 cursor: "pointer",
                                 opacity: 0.7,
-                                userSelect: "none",
-                                transition: "color 0.2s ease",
-                                "&:hover": { color: "#9E0808", textDecoration: "underline" },
+                                "&:hover": { textDecoration: "underline" },
                             }}
                         >
                             Don&#39;t have an account? Sign up
@@ -252,19 +280,12 @@ export default function LoginPage() {
                             backgroundPosition: "center",
                         }}
                     >
-                        <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "#D91818", opacity: 0.8 }} />
+                        <Box sx={{ position: "absolute", inset: 0, backgroundColor: "#D91818", opacity: 0.8 }} />
                     </Box>
                 </Paper>
             </div>
-            <div
-                className={styles.footer}
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "8px",
-                }}
-            >
+
+            <div className={styles.footer}>
                 <ThemeToggle />
                 <Typography
                     sx={{
